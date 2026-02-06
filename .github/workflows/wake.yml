@@ -1,0 +1,9 @@
+name: Wake Up Supabase
+on:
+    schedule:
+        - cron: "0 8 * * *"
+jobs:
+    ping:
+        runs-on: ubuntu-latest
+        steps:
+            - run: curl -I https://ogkycbscvwktffjbbsyu.supabase.co

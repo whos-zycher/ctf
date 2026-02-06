@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ZYCHER CTF</title>
+		<link rel="stylesheet" href="style.css" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+	</head>
+
+	<body>
+		<div id="app">
+			<div id="toast-container"></div>
+
+			<div id="challenge-modal" class="modal hidden">
+				<div class="modal-backdrop" onclick="closeModal()"></div>
+				<div class="modal-content">
+					<div class="modal-tabs">
+						<button
+							id="modal-tab-challenge"
+							class="modal-tab active"
+							onclick="switchModalTab('challenge')"
+						>
+							[CHALLENGE]
+						</button>
+						<button
+							id="modal-tab-solvers"
+							class="modal-tab"
+							onclick="switchModalTab('solvers')"
+						>
+							[SOLVERS]
+							<span
+								id="modal-solvers-count"
+								class="modal-solvers-badge"
+								>0</span
+							>
+						</button>
+					</div>
+
+					<div id="modal-content-challenge" class="modal-tab-content">
+						<div class="modal-header">
+							<h3 id="modal-title">Challenge Title</h3>
+							<span id="modal-points" class="modal-points"
+								>0 PTS</span
+							>
+						</div>
+						<div id="modal-badge" class="modal-badge hidden"></div>
+						<p id="modal-desc" class="modal-desc">
+							Description here...
+						</p>
+						<a
+							id="modal-download"
+							class="modal-download hidden"
+							href="#"
+							download
+							>[DOWNLOAD FILE]</a
+						>
+
+						<div
+							id="modal-input-section"
+							class="modal-input-section"
+						>
+							<input
+								type="text"
+								id="modal-flag-input"
+								placeholder="CTF{...}"
+							/>
+							<button
+								id="modal-submit-btn"
+								onclick="submitModalFlag()"
+							>
+								[SUBMIT]
+							</button>
+						</div>
+
+						<div
+							id="modal-solved-section"
+							class="modal-solved-section hidden"
+						>
+							<div class="solved-badge">// SOLVED</div>
+						</div>
+					</div>
+
+					<div
+						id="modal-content-solvers"
+						class="modal-tab-content hidden"
+					>
+						<div class="solvers-header">
+							<h3>Solvers</h3>
+							<span id="modal-solvers-total" class="solvers-total"
+								>0 solvers</span
+							>
+						</div>
+						<div id="modal-solvers-list" class="solvers-list">
+							<span class="no-solvers"
+								>No one has solved this yet. Be the first!</span
+							>
+						</div>
+					</div>
+
+					<button class="modal-close-btn" onclick="closeModal()">
+						[CLOSE]
+					</button>
+				</div>
+			</div>
+
+			<div id="page-auth" class="full-screen-center">
+				<div class="auth-card">
+					<div class="auth-header">
+						<h2>ZYCHER_SYSTEMS</h2>
+						<p>
+							capture the <span class="underline-word">flag</span>
+						</p>
+					</div>
+
+					<div class="tabs">
+						<button
+							id="tab-login"
+							class="tab-btn active"
+							onclick="setAuthMode('login')"
+						>
+							[LOGIN]
+						</button>
+						<button
+							id="tab-register"
+							class="tab-btn"
+							onclick="setAuthMode('register')"
+						>
+							[REGISTER]
+						</button>
+					</div>
+
+					<div class="auth-form active">
+						<div class="input-group">
+							<label for="login-name">Username</label>
+							<input
+								type="text"
+								id="login-name"
+								placeholder="Enter username"
+								required
+							/>
+						</div>
+
+						<div id="display-name-group" class="input-group hidden">
+							<label for="display-name">Display Name</label>
+							<input
+								type="text"
+								id="display-name"
+								placeholder="Public alias"
+							/>
+						</div>
+
+						<div class="input-group">
+							<label for="pass">Password</label>
+							<input
+								type="password"
+								id="pass"
+								placeholder="••••••••"
+								required
+							/>
+						</div>
+
+						<button
+							id="action-btn"
+							class="btn btn-large"
+							onclick="executeAuth()"
+						>
+							[AUTHENTICATE]
+						</button>
+					</div>
+				</div>
+
+				<div class="auth-footer">Built to work - not to impress</div>
+			</div>
+
+			<div id="main-layout" class="hidden">
+				<nav class="navbar">
+					<div class="nav-brand">ZYCHER_SYSTEMS</div>
+					<div class="nav-links">
+						<a
+							href="#rules"
+							class="nav-link"
+							data-page="rules"
+							onclick="
+								router('rules');
+								return false;
+							"
+							>Rules</a
+						>
+						<a
+							href="#challenges"
+							class="nav-link"
+							data-page="challenges"
+							onclick="
+								router('challenges');
+								return false;
+							"
+							>Challenges</a
+						>
+						<a
+							href="#scoreboard"
+							class="nav-link"
+							data-page="scoreboard"
+							onclick="
+								router('scoreboard');
+								return false;
+							"
+							>Scoreboard</a
+						>
+						<a
+							href="#users"
+							class="nav-link"
+							data-page="users"
+							onclick="
+								router('users');
+								return false;
+							"
+							>Users</a
+						>
+						<a
+							href="#profile"
+							class="nav-link"
+							data-page="profile"
+							onclick="
+								router('profile');
+								return false;
+							"
+							>Profile</a
+						>
+						<a
+							href="#settings"
+							class="nav-link"
+							data-page="settings"
+							onclick="
+								router('settings');
+								return false;
+							"
+							>Settings</a
+						>
+					</div>
+					<div class="nav-user">
+						<span id="nav-user">[ Guest ]</span>
+						<button class="logout-btn" onclick="logout()">
+							Log Out
+						</button>
+					</div>
+				</nav>
+
+				<main id="content-area">
+					<div id="page-rules" class="view-section hidden">
+						<div
+							style="
+								border-bottom: 1px solid #333;
+								padding-bottom: 10px;
+								margin-bottom: 20px;
+							"
+						>
+							<h2
+								class="glitch"
+								data-text=">> RULES"
+								style="margin: 0; font-size: 1.5rem"
+							>
+								RULES
+							</h2>
+							<small style="color: #666"
+								>COMPLIANCE IS MANDATORY // VIOLATION =
+								BAN</small
+							>
+						</div>
+
+						<div class="rules-container">
+							<div class="rule-card">
+								<div class="rule-number">01</div>
+								<h3>INFRASTRUCTURE INTEGRITY</h3>
+								<p>
+									Absolute prohibition on attacking platform
+									infrastructure (servers, DB, load
+									balancers). Target only the challenges. DDoS
+									or scanner spam results in ban.
+								</p>
+							</div>
+
+							<div class="rule-card">
+								<div class="rule-number">02</div>
+								<h3>INFORMATION CONTAINMENT</h3>
+								<p>
+									Sharing flags, write ups, or hints during
+									the active phase is strictly forbidden. One
+									human = One account. Multiboxing is not
+									tolerated.
+								</p>
+							</div>
+
+							<div class="rule-card">
+								<div class="rule-number">03</div>
+								<h3>RESOURCE USAGE</h3>
+								<p>
+									No automated tools (DirBuster, sqlmap) on
+									the platform infrastructure. Manual testing
+									and scripts targeting specific challenges
+									are allowed.
+								</p>
+							</div>
+
+							<div class="rule-card">
+								<div class="rule-number">04</div>
+								<h3>SUBMISSION STANDARD</h3>
+								<p>
+									Standard flag format is
+									<code>CTF{secret_text}</code> unless
+									specified otherwise. Flags are
+									case-sensitive.
+								</p>
+							</div>
+
+							<div class="rule-card">
+								<div class="rule-number">05</div>
+								<h3>VULNERABILITY DISCLOSURE</h3>
+								<p>
+									Found a bug in the scoreboard or auth
+									system? Report it directly to Admin.
+									Exploiting platform bugs for points =
+									disqualification.
+								</p>
+							</div>
+
+							<div class="rule-card">
+								<div class="rule-number">06</div>
+								<h3>CHAIN OF COMMAND</h3>
+								<p>
+									Admin decision is final and non negotiable.
+									<!--Unless one send feet pics-->
+								</p>
+							</div>
+						</div>
+
+						<div class="contact-terminal">
+							<div style="color: #666; margin-bottom: 15px">
+								Contact
+							</div>
+
+							<div class="contact-line">
+								<div class="contact-label">[ DISCORD ]</div>
+								<div class="contact-value">
+									<a
+										href="https://discord.com/users/912436246515703848"
+										target="_blank"
+									>
+										@i_29 &lt;INIT_CHAT&gt;
+									</a>
+								</div>
+							</div>
+
+							<div class="contact-line">
+								<div class="contact-label">[ EMAIL ]</div>
+								<div class="contact-value">
+									<a href="mailto:zycher@cock.li"
+										>zycher@cock.li</a
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div id="page-challenges" class="view-section hidden">
+						<h2 class="section-title">Challenges</h2>
+						<div class="mode-toggle">
+							<button
+								id="mode-normal"
+								class="mode-btn active"
+								onclick="setDisplayMode('normal')"
+							>
+								[NORMAL MODE]
+							</button>
+							<button
+								id="mode-storyline"
+								class="mode-btn"
+								onclick="setDisplayMode('storyline')"
+							>
+								[STORYLINE MODE]
+							</button>
+						</div>
+						<div id="challenges-list">
+							<div class="loader">Loading challenges...</div>
+						</div>
+					</div>
+
+					<div id="page-scoreboard" class="view-section hidden">
+						<h2 class="section-title">Scoreboard</h2>
+						<div class="scoreboard-container">
+							<div class="chart-section">
+								<div class="chart-header">
+									<h3>Top 10 Score Progression</h3>
+									<div
+										id="chart-legend"
+										class="chart-legend"
+									></div>
+								</div>
+								<div class="chart-wrapper">
+									<canvas id="score-chart"></canvas>
+								</div>
+							</div>
+							<div class="table-container">
+								<table id="ranking-table" class="table">
+									<thead>
+										<tr>
+											<th>Rank</th>
+											<th>User</th>
+											<th>Solved</th>
+											<th>Score</th>
+										</tr>
+									</thead>
+									<tbody></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div id="page-users" class="view-section hidden">
+						<h2 class="section-title">Recent Users</h2>
+						<div id="users-list" class="users-grid"></div>
+					</div>
+
+					<div id="page-profile" class="view-section hidden">
+						<h2 class="section-title">Profile</h2>
+						<div class="profile-container">
+							<div class="profile-header-card">
+								<div class="profile-avatar" id="profile-avatar">
+									?
+								</div>
+								<div class="profile-info">
+									<h3 id="profile-name">Unknown</h3>
+									<p id="profile-email">@unknown</p>
+								</div>
+							</div>
+							<div class="profile-stats-grid">
+								<div class="stat-card">
+									<span
+										class="stat-value"
+										id="profile-solves-count"
+										>0</span
+									>
+									<span class="stat-label"
+										>Challenges Solved</span
+									>
+								</div>
+								<div class="stat-card">
+									<span class="stat-value" id="profile-score"
+										>0</span
+									>
+									<span class="stat-label">Total Points</span>
+								</div>
+								<div class="stat-card">
+									<span class="stat-value" id="profile-rank"
+										>#-</span
+									>
+									<span class="stat-label">Global Rank</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div id="page-settings" class="view-section hidden">
+						<h2 class="section-title">Settings</h2>
+						<div class="settings-container">
+							<div class="settings-section">
+								<h3>Account Security</h3>
+								<p class="settings-desc">
+									Update your password.
+								</p>
+								<div class="input-group">
+									<label for="new-pass">New Password</label>
+									<input
+										type="password"
+										id="new-pass"
+										placeholder="Enter new password"
+										required
+									/>
+								</div>
+								<button class="btn" onclick="updatePassword()">
+									[UPDATE PASSWORD]
+								</button>
+							</div>
+							<div class="settings-section">
+								<h3>Account Info</h3>
+								<div class="settings-info">
+									<div class="info-row">
+										<span class="info-label">Username</span>
+										<span
+											class="info-value"
+											id="settings-username"
+											>-</span
+										>
+									</div>
+									<div class="info-row">
+										<span class="info-label"
+											>Member Since</span
+										>
+										<span
+											class="info-value"
+											id="settings-joined"
+											>-</span
+										>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+			</div>
+		</div>
+
+		<script src="app.js"></script>
+	</body>
+</html>
